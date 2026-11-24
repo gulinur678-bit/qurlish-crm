@@ -1,48 +1,56 @@
-# Qurlish CRM — v0.3 Design decisions
+# Qurlish CRM — v0.4 dizayn qarorlari
 
-**Date:** 2026-11-23. **Status:** React frontend source authored; dependencies/build/browser visual verification still pending. Single-company prototype, not production-ready.
+**Holat:** single-company prototip, auth va sessiya nazoratiga ega. Public landing/xonadon tanlash va CRM alohida oqimlarda qoladi.
 
-## Users, journeys and IA
+## Foydalanuvchi oqimlari
 
-1. Buyer (no login): landing → **Xonadon tanlash** → building → floor → unit → details → enquiry; API success/error shown and idempotent retry key held for that attempt.
-2. Sales manager: `/crm` login → dashboard (7/30/90 days) → Kanban or client table → lead history → internal note/`tel:`. Admin and manager both use backend-authorized operations. **No sale confirmation action**.
+1. Xaridor: landing → xonadon tanlash → xonadon → murojaat. Bu oqim login talab qilmaydi; API xonadon mavjudligini tekshiradi va idempotency kaliti bilan takroriy yuborishni xavfsiz qiladi.
+2. Xodim: `/crm` → login yoki mavjud refresh cookie orqali sessiyani tiklash → dashboard / Kanban / mijoz kartasi.
+3. Admin: mavjud CRM oqimlaridan tashqari `/api/admin/users` orqali xodim yaratadi, rolini o‘zgartiradi yoki hisobini deaktivatsiya qiladi.
 
-Landing IA: navbar → hero → company concept → values → apartment selector CTA → enquiry CTA → contact clarification. Staff login is separate from public primary CTA.
+Landing, selector, dashboard, Kanban, mijozlar jadvali va drawer’ning v0.3 visual system’i, responsive o‘lchamlari va rang rollari saqlanadi. Viewer uchun tahrirlash boshqaruvlari o‘chiriladi; serverdagi RBAC asosiy xavfsizlik chegarasi bo‘lib qoladi.
 
-## Wireframes / intended page states
+## Auth va API kontrakti
 
-- Landing desktop: fixed-height hero with editorial headline and one primary action; below, airy two-column about section, ruled list, split-screen selection CTA; mobile stacks content, a collapsible nav never covers sections.
-- Apartment selection desktop: 3-column building/floor controls | apartment grid | selected detail; medium screens detail moves under grid, small screens one column; states loading, empty inventory, failed API, available/reserved/sold, pending/success/error form. Selectable even without 3D.
-- CRM desktop: dark 253px sidebar | topbar | KPI row | chart/status | funnel/recent; 768px mobile navigation toggles; 390px KPIs are 2 columns and tables scroll. States loading, empty 7/30/90 period and API error.
-- Kanban: 4 existing authorized backend stages; dragging or stage select changes a card. Response rejection rolls back local state. Keyboard users use the stage select.
-- Client drawer: contact phone, status, events, internal note. Escape/close returns focus to invoking element; **complete focus trapping is not yet independently verified**.
+- `POST /api/auth/login` body: `{email, password}`. Javob: `{access_token, token_type, expires_in, user}`; refresh token javob body’siga kirmaydi.
+- Access token — 15 daqiqa amal qiladigan JWT, React module xotirasida saqlanadi va `Authorization: Bearer` orqali yuboriladi.
+- Refresh token — 14 kunlik, `HttpOnly`, `SameSite=Strict` cookie (`Secure` HTTPS muhitida). React startup’da `POST /api/auth/refresh` qilib yangi access token oladi.
+- Har refresh bir martalik token yozuvini `RefreshSession` jadvaliga xesh bilan saqlaydi. Refresh token replay bo‘lsa butun family revoke qilinadi; access token ishlatilishida ham family, account active holati va kompaniya ID tekshiriladi.
+- Logout server tomonda family’ni bekor qiladi. Admin account deaktivatsiyasi yoki rol o‘zgarishi xodimning barcha aktiv family sessiyalarini bekor qiladi.
+- Logout refresh cookie va mavjud Bearer’dagi family’larni bekor qiladi; cookie yo‘q bo‘lsa ham valid access orqali ishlaydi. Takroriy logout idempotent.
+- SQLite’da security yozishlari o‘qishdan oldin `BEGIN IMMEDIATE` oladi. PostgreSQL’da bitta kompaniyaning barqaror qatori `FOR UPDATE` bilan qulflanadi. Login, refresh, logout, account tahriri, bootstrap va CRM mutatsiyalari bir tartibda bajariladi; bu role tekshiruvi bilan yozish o‘rtasidagi poygani ham cheklaydi. Company darajasidagi qulf sodda, ammo autentifikatsiya yuklamasini navbatlaydi.
+- Rotation `used_at IS NULL AND revoked_at IS NULL` shartli UPDATE bilan bitta voris yaratadi. Claim, voris va audit bitta tranzaksiyada; xatoda rollback. Parallel reuse natijasi bitta 200 va bitta 401; oxirida butun family bekor.
+- Browser’da bir tab uchun refresh promise, tablar orasida `navigator.locks` ishlatiladi. Login/logout ham shu qulfni oladi. Logout xabari `BroadcastChannel` orqali tarqaladi; avlod hisoblagichi logoutdan oldin boshlangan javobni tashlab yuboradi. Tokenlar storage yoki kanalga yozilmaydi. Web Locks bo‘lmasa avtomatik refresh rad etiladi.
+- Origin va `Sec-Fetch-Site` tekshiruvi state-changing API so‘rovlariga tatbiq etiladi.
+- Vite proxy Origin’ni qayta yozmaydi va Host’ni saqlaydi; backend haqiqiy browser originini tekshiradi. Auth/CRM/admin javoblariga `Cache-Control: no-store` qo‘yiladi.
 
-## Design language and color roles
+## Rollar va ma’lumotlar chegarasi
 
-- Typeface: Manrope for headings, DM Sans for interface/body, Georgia italic selectively for editorial emphasis.
-- Background `#f7f9f7`, paper `#fff`, ink `#20322f`, forest primary `#243d38`, muted text `#78817d`, warm editorial accent `#aa8861`, border `#e6e9e5`.
-- State: available `#2e7b63`, reserved `#d9a35e`, sold neutral `#b9c0c1`. Status is *always* shown in readable text too.
-- Layout: container up to 1320px; desktop spacing 40–134px based on section context; compact CRM panels have 14–28px padding; corners 6–12px; shadows minimal.
-- Motion: single subtle hero entrance, hover states; `prefers-reduced-motion` disables entrance/transitions and smooth scrolling.
-- Contrast: all relevant text/interactive states require browser verification at >=4.5:1 normal and >=3:1 large; **not yet measured**.
-- Touch: important navigation/actions aim at >=44 CSS px; compact secondary links may be smaller and should be checked in device QA.
+| Amal | Admin | Seller | Viewer |
+|---|---:|---:|---:|
+| CRM ma’lumotlarini ko‘rish | Ha | Ha | Ha |
+| Murojaat bosqichi/eslatma | Ha | Ha | Yo‘q |
+| Xonadon statusi | Ha | Yo‘q | Yo‘q |
+| Xodim va rollarni boshqarish | Ha | Yo‘q | Yo‘q |
 
-## API mappings
+Mavjud `manager` rollari `seller` ga, `admin` rollari `admin` ga xaritalanadi. Noma’lum rol `viewer` qilinib deaktivatsiya qilinadi; parol xeshlari saqlanadi.
 
-`GET /api/public/units`, `POST /api/public/leads` with `Idempotency-Key`; `/api/auth/login`, `/api/auth/logout`, `/api/crm/me`, `/api/crm/metrics?days=`, `/api/crm/leads?days=`, `/api/crm/leads/{id}/stage`, `/api/crm/leads/{id}/events`, `/api/crm/leads/{id}/notes`.
+Faqat `qurlish` kompaniyasi sozlangan. Migration mavjud company, unit, lead, event va idempotency ma’lumotlarini bitta kompaniyaga bog‘laydi. CRM va admin ID qidiruvlari `company_id` bilan filterlanadi; boshqa kompaniya resursi 404 qaytaradi. Public xonadonlar va lead intake ham faqat sozlangan kompaniyaga scope qilinadi.
 
-Never synthesize backend inventory in this React UI. Dashboard metrics and lead records use the same selected period. Unit statuses are current inventory, not filtered by leads' date; legends explain units.
+## Ma’lumotlar va migratsiya
 
-## Files added/changed in v0.3
+- `User` eski `staff` yozuvlarini `users` jadvaliga ko‘chiradi; email, PK va password hash saqlanadi.
+- `AuditLog` login, sessiya rotatsiyasi/replay, lead mutatsiyasi, xodim o‘zgarishi va unit status o‘zgarishini yozadi. Parol va raw token auditga kiritilmaydi.
+- `RefreshSession` har bir refresh token uchun hash, family, expiration, ishlatilgan/bekor qilingan vaqt va almashtirgan token ID sini saqlaydi.
+- Alembic app startup’da avtomatik ishlamaydi. Sxema faqat `alembic upgrade head` bilan yangilanadi; eski ma’lumotlarni backfill qiladi.
+- Birinchi admin `python -m backend.bootstrap` orqali yaratiladi; env paroli kamida 16 belgi, admin mavjud bo‘lsa bootstrap rad etadi.
 
-- Added `frontend/index.html`, `frontend/package.json`, `frontend/tsconfig.json`, `frontend/vite.config.ts`, `frontend/src/{api.ts,main.tsx,styles.css}`, `frontend/README.md`.
-- Added `.gitignore` for secrets, virtual env, dev databases and node artifacts.
-- Updated `DESIGN.md`, `docs/ux-review.md` and project `README.md`.
-- **Unchanged:** `backend/main.py`, database structure, legacy frontend, tests, auth and API contracts. Production unmodified.
+## Tekshiruv va chegaralar
 
-## Measured outcomes and limits
-
-- React source authored; direct dependency installation did not finish in the execution environment. **No passing npm build/typecheck evidence yet**.
-- Static syntax transpilation performed separately if noted in UX review; not equivalent to typecheck/build.
-- No verified desktop/mobile before/after screenshots; no measured Core Web Vitals/FPS.
-- Actual WebGL, cutaway, authoritative plans, approved sales, Alembic migrations, PostgreSQL verification, production security, anti-spam, company brand assets and phone details pending.
+- Backend acceptance tests vaqtinchalik SQLite DB’da auth, RBAC, replay detection, account/session revocation va company boundary’ni tekshiradi. Mustaqil DB connectionlar hamda Event/Barrier bilan boshqarilgan testlar refresh–refresh, refresh–logout, refresh–deaktivatsiya, oxirgi admin va bootstrap poygalarini tekshiradi; timing uchun sleep ishlatilmaydi.
+- Alohida migration testi oldingi sxemadan upgrade qilib mavjud xonadon, lead, event, idempotency va password hash saqlanishini tasdiqlaydi.
+- Yangi backup nusxasi tekshirilgach, foydalanuvchi tasdig‘i bilan asl demo ham `20261124_v04` revision’iga ko‘tarildi. 84 xonadon, 2 murojaat va 1 aktiv admin, jumladan password hash maydonlar darajasida saqlandi. Backup va `local-dev.db` o‘zgarmadi.
+- Frontend `npm run typecheck`, `npm run build` va Playwright/Chrome’da tekshiriladi. Browser oqimlari public landing/katalog, login, logout, refresh, Viewer, tablar va kechikkan refreshni qamraydi. Kontrast/visual regression va real PostgreSQL operatsion tekshiruvi bajarilmagan.
+- `E2E_DEMO_COPY=1` test serveri asl demoni read-only backup API bilan vaqtinchalik faylga nusxalaydi. Test hisoblari, yangi murojaat va Kanban tahriri faqat shu nusxada yaratiladi. Asl demoda 2 murojaat qoladi. Mavjud admin loginini foydalanuvchi qo‘lda muvaffaqiyatli tekshirganini tasdiqladi; parol oshkor qilinmadi yoki almashtirilmadi. Mavjud hisob bilan avtomatik E2E bajarilmadi.
+- `references/lesson-20/` yo‘q; darsdagi implementatsiya bilan solishtirish ochiq.
+- 3D interaktivlik, tasdiqlangan sotuv workflow’i, rate limiting, monitoring va production rollout ushbu bosqichda yo‘q.
