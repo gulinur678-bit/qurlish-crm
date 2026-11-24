@@ -3,6 +3,7 @@ __pycache__/
 .pytest_cache/
 *.py[cod]
 *.db
+*.db-*
 *.sqlite*
 .env
 .env.*
@@ -12,3 +13,8 @@ dist/
 frontend/*.tsbuildinfo
 .DS_Store
 .idea/
+.codex/
+references/
+backups/
+frontend/test-results/
+frontend/playwright-report/

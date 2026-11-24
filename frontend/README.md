@@ -1,49 +1,52 @@
-# Qurlish CRM · React frontend v0.3
+# Qurlish CRM React frontend · v0.4
 
-React + TypeScript + Vite redesign, deliberately integrated with the **existing** FastAPI endpoints. Both public and staff pages use live API responses; no synthetic data is silently generated in the React frontend.
+React + TypeScript + Vite. Public landing va xonadon tanlash hamda xodimlar CRM’i bir xil backend API’dan foydalanadi.
 
-## Run on your Mac (two terminals)
+## Ishga tushirish
 
-Terminal A — existing backend (from repository root):
+Backend root papkadan:
 
 ```bash
-cd ~/Desktop/qurlish-crm
 source .venv/bin/activate
-# configure your existing local development DATABASE_URL/JWT_SECRET
-python -m uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000
+python scripts/run_demo.py
 ```
 
-Terminal B — React development server:
+Frontend alohida terminalda:
 
 ```bash
-cd ~/Desktop/qurlish-crm/frontend
+cd frontend
 npm install
 npm run dev
 ```
 
-Open **http://127.0.0.1:5173**. Choose **Xodimlar uchun** for the protected CRM. Vite forwards `/api` to the local backend; do **not** open the old backend's `:8000` homepage when checking the new React UI. The Vite proxy rewrites the dev-only Origin header to satisfy the backend's origin guard. Do not re-use that origin rewrite in production reverse-proxy configuration.
+http://127.0.0.1:5173 ni oching. Vite /api so‘rovlarini backend’ga uzatadi. Landing / va xonadon tanlash /apartments public; xodimlar CRM’i /crm da.
 
-## Verify
+Launcher faqat migratsiyalangan lokal demo bazani ochadi va private JWT sozlamasini Git’dan chiqarilgan faylda saqlaydi. Mavjud admin hisobini yaratmaydi yoki parolini almashtirmaydi.
+
+## Auth oqimi
+
+- Login POST /api/auth/login access token va foydalanuvchi qaytaradi; refresh token HttpOnly cookie sifatida o‘rnatiladi.
+- Access token tab xotirasida turadi va API’ga Bearer header bilan boradi; localStorage ishlatilmaydi.
+- Sahifa ochilganda va access token eskirganda POST /api/auth/refresh chaqiriladi. Bir tabda parallel refresh bitta promise’ga birlashadi; tablar orasida Web Locks navbatlaydi. Logout BroadcastChannel orqali boshqa tablarni ham tozalaydi; kechikkan refresh javobi sessiyani tiklamaydi. Web Locks uchun HTTPS yoki localhost kerak; qo‘llanmasa qayta login qilinadi.
+- Logoutdagi tarmoq xatosi interfeysda ko‘rsatiladi; server revocation tasdiqlanmagan bo‘lishi mumkin. Vite proxy asl Origin’ni saqlaydi.
+- Viewer uchun bosqich va eslatma kiritish boshqaruvlari o‘chirilgan. Server har bir yozish amalida rolni qayta tekshiradi.
+
+## Tekshiruv
 
 ```bash
-cd frontend
 npm run typecheck
 npm run build
+E2E_PYTHON='/absolute/path/to/project/.venv/bin/python' npm run test:e2e
 ```
 
-Existing backend tests: from repository root `python -m pytest -q tests/test_api.py tests/smoke_test.py`.
+Backend acceptance, parallel security va migration tests: repository root’dan `.venv/bin/python -m pytest -q tests`. Playwright o‘rnatilgan Chrome’dan foydalanadi; yangi vaqtinchalik migrated DB va sintetik hisoblar bilan 8000/5173 portlarida test serverlari ochadi. Port band bo‘lsa to‘xtaydi. Trace, video va screenshot o‘chiq. macOS Node CA/Keychain xatosida `NODE_OPTIONS=--use-bundled-ca` ishlating.
 
-## Screens
+`E2E_DEMO_COPY=1` bilan shu testlar 84 xonadonli demo bazaning vaqtinchalik nusxasida ishlaydi. Murojaat yuborish va Kanban tahriri ham tekshiriladi; asl 2 murojaat saqlanadi. Ishlayotgan demo uchun root’dan `.venv/bin/python scripts/check_demo.py` bor; haqiqiy admin login testi private password fayli mavjudligini talab qiladi.
 
-- `/`: premium editorial landing, image-led hero, features, selected-apartment CTA.
-- `/apartments`: progressive selection by building → floor → unit; conceptual 2D floorplan (not a technical drawing), real unit records from `/api/public/units`, application form to `/api/public/leads` with idempotency key. Does not submit when API offline.
-- `/crm`: employee login, API-based dashboard with period filter, lead table, Kanban and lead history/internal notes.
+## Mavjud imkoniyatlar va chegaralar
 
-## Intentional limitations
-
-- No 3D/WebGL or true floorplan/cutaway in v0.3. Dedicated 2D fallback functions now; `React Three Fiber` would be a separate v0.4.
-- Photos are illustrative third-party images; do not imply they represent actual property, plan, award, pricing or reviews.
-- No sale-confirmation UI because the server has no approved sale-confirmation workflow.
-- Backend dev database needs explicitly created inventory and users. No automatic seeding or deployment.
-- Existing backend SQLite local demo is not production. Harden security and migrate to PostgreSQL before real customer use.
-- Public and staff performance, accessibility and device screenshot checks require manual browser runs. No measured FPS, LCP or production-grade accessibility claims.
+- /apartments real /api/public/units katalogidan o‘qiydi, /api/public/leads ga idempotent murojaat yuboradi va API ishlamasa synthetic inventory ko‘rsatmaydi.
+- /crm dashboard, Kanban, mijozlar ro‘yxati, tarix va ichki eslatmalarni ko‘rsatadi.
+- 3D/WebGL yoki texnik chizma yo‘q; xonadon tanlash 2D ko‘rinishda.
+- Sotuvni tasdiqlash workflow’i yo‘q. Rasmlar illyustrativ.
+- Responsive, accessibility va brauzer screenshot tekshiruvi alohida qo‘lda bajarilishi kerak.
