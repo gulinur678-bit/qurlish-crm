@@ -1,0 +1,23 @@
+[
+  {
+    "width": 390,
+    "keyboardFocus": "passed",
+    "reducedMotion": "0s",
+    "contrastFailures": [],
+    "landingContrastFailures": []
+  },
+  {
+    "width": 768,
+    "keyboardFocus": "passed",
+    "reducedMotion": "0s",
+    "contrastFailures": [],
+    "landingContrastFailures": []
+  },
+  {
+    "width": 1440,
+    "keyboardFocus": "passed",
+    "reducedMotion": "0s",
+    "contrastFailures": [],
+    "landingContrastFailures": []
+  }
+]

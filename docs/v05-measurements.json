@@ -1,0 +1,32 @@
+{
+  "environment": "Local Vite dev server, headless desktop Chrome with SwiftShader software WebGL; viewport emulation, no network throttling",
+  "results": [
+    {
+      "width": 390,
+      "catalogueMs": 724.2541669999999,
+      "sceneMs": 2144.9381670000002,
+      "fps": 30.049175483190538,
+      "idleFrames": 0,
+      "errors": [],
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "catalogueMs": 1945.5904169999976,
+      "sceneMs": 557.7513330000002,
+      "fps": 29.996203612979215,
+      "idleFrames": 0,
+      "errors": [],
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "catalogueMs": 742.1915840000001,
+      "sceneMs": 876.5700840000027,
+      "fps": 30.141757628054698,
+      "idleFrames": 0,
+      "errors": [],
+      "overflow": false
+    }
+  ]
+}
