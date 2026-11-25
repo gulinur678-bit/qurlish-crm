@@ -54,3 +54,41 @@ Faqat `qurlish` kompaniyasi sozlangan. Migration mavjud company, unit, lead, eve
 - `E2E_DEMO_COPY=1` test serveri asl demoni read-only backup API bilan vaqtinchalik faylga nusxalaydi. Test hisoblari, yangi murojaat va Kanban tahriri faqat shu nusxada yaratiladi. Asl demoda 2 murojaat qoladi. Mavjud admin loginini foydalanuvchi qo‘lda muvaffaqiyatli tekshirganini tasdiqladi; parol oshkor qilinmadi yoki almashtirilmadi. Mavjud hisob bilan avtomatik E2E bajarilmadi.
 - `references/lesson-20/` yo‘q; darsdagi implementatsiya bilan solishtirish ochiq.
 - 3D interaktivlik, tasdiqlangan sotuv workflow’i, rate limiting, monitoring va production rollout ushbu bosqichda yo‘q.
+
+## v0.5 — Premium Landing & Interactive 3D (2026-11-25)
+
+Public sahifalar uchun yangi tizim `frontend/src/premium.css` da; CRM v0.4 uslubi saqlandi. Landing `PremiumLanding.tsx`, lazy yuklanadigan katalog `Explorer.tsx`, geometrik sahna `Scene.tsx` ga ajratildi. Mahalliy CSS arxitektura tasviri tashqi pullik servis talab qilmaydi. Xonadon detailidagi interyer suratlari illyustrativligicha qoladi.
+
+### Oqim va wireframe
+
+Xaridor: navbar → editorial hero va **Xonadon tanlash** → majmua → bino → qavat → API ID bilan xonadon → detail → idempotent murojaat → raqamli tasdiq.
+
+Menejer: CRM login → dashboard → Kanban → mijoz kartasi → eslatma/bosqich. Ushbu oqimning professional redesigni v0.6 uchun qoldirildi.
+
+Desktop landing: `[navbar] [matn/CTA | arxitektura] [tavsif | izoh] [3 afzallik] [aloqa/CTA] [footer]`.
+Desktop katalog: `[sarlavha] [3D toolbar / sahna / kamera boshqaruvi] [bino-qavat | 2D xonadonlar | detail]`.
+Mobil: bo‘limlar bir ustun; tanlangan xonadon tafsiloti pastdan ochiladigan, yopish tugmali non-modal bottom sheet. Dialog murojaat formasida focus trap mavjud; sheet ochilganda sarlavhaga focus, yopilganda tanlangan kartaga qaytish.
+
+### Terminlar — loyiha misolida
+
+- **Visual hierarchy** — axborotning muhimligiga mos kattalik: landingda avval katta sarlavha, so‘ng izoh, keyin asosiy CTA ko‘rinadi.
+- **Editorial typography** — jurnalga xos shrift kompozitsiyasi: Georgia serif sarlavhalari bilan sodda sans-serif matn birlashadi.
+- **Grid** — ustunlar tizimi: desktop hero ikki ustun, afzalliklar uch ustun; mobil bir ustun.
+- **Whitespace** — bo‘sh joy: bo‘limlar orasidagi 72/112px oraliq matn va tasvirni ajratadi.
+- **Design token** — qayta ishlatiladigan qiymat: `--surface`, `--text`, `--accent`, `--line`, status ranglari, spacing, radius, shadow va motion o‘zgaruvchilari.
+- **CTA** — keyingi amal tugmasi: “Xonadon tanlash”.
+- **Cutaway** — tomi olib tashlangan kesim: xonalar poliga bosilganda ajratib ko‘rsatiladi. Xonalar soni API’dan, shakli va mebeli taxminiy; texnik reja emas.
+- **Progressive enhancement** — 2D katalogga qurilma qo‘llasa 3D imkoniyatini qo‘shish. 3D xatosida murojaat oqimi ishlashda davom etadi.
+- **Reduced motion** — operatsion tizim sozlamasiga ko‘ra CSS animatsiya va silliq kamera o‘tishlarini o‘chirish.
+
+Termin referensi: https://ux-ui-atlas-komiljon.komildjonxyz.chatgpt.site/ — Chrome orqali o‘qildi; maket ko‘chirilmagan.
+
+### 3D kontrakti
+
+React 19 bilan Fiber 9 va Drei 10 ishlatiladi. Rasmiy moslik: https://r3f.docs.pmnd.rs/getting-started/introduction . Binolar API building qiymatidan tuziladi; demo nusxasida 4 bino, har biri 7 qavat va jami 84 xonadon. Har bir mesh mavjud `Unit.id` bilan tanlanadi. Maydon, xona soni, narx va status API’dan olinadi; narx geometriyadan chiqarilmaydi. Bino/qavat izolyatsiyasi boshqa binolarning tanlovni to‘sishini oldini oladi. Majmuada tanlash, orbit, zoom, reset va xonadonlar orasida oldingi/keyingi tugmalari mavjud. Shu amallar HTML tugmalar bilan klaviaturada bajariladi; canvas alohida screen-reader interfeysi emas.
+
+`frameloop="demand"`, DPR 1–1.5; faqat interaksiya/harakatda render. Model tashqi GLB yoki HDR yuklamaydi. 3D chunk faqat foydalanuvchi ochganda yuklanadi. WebGL2 yo‘qligi, context loss yoki lazy modul xatosi 2D katalogga qaytadi.
+
+Public muted matn kontrasti: surface’da 5.84:1, afzallik fonida 5.33:1; uch status juftligi 6.31:1 yoki yuqori; to‘q contact fonida matn 9.53:1. Hisob sRGB nisbiy yorqinlik formulasiga asoslangan. CRM kontrast auditi bu bosqichga kirmaydi.
+
+v0.5 tasdiqlangan test/performance dalillari: [UX review](docs/ux-review.md), [o‘lchovlar](docs/v05-measurements.json), [accessibility](docs/v05-accessibility.json). Cutaway xonalarini polga bosib yoki raqamli HTML tugmalar orqali klaviaturada tanlash mumkin. Kamera effekti faqat ko‘rinish/reset o‘zgarishiga bog‘langan; forma matnini tahrirlash kamerani qayta joylashtirmaydi.

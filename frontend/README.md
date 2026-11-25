@@ -1,4 +1,4 @@
-# Qurlish CRM React frontend · v0.4
+# Qurlish CRM React frontend · v0.5
 
 React + TypeScript + Vite. Public landing va xonadon tanlash hamda xodimlar CRM’i bir xil backend API’dan foydalanadi.
 
@@ -47,6 +47,6 @@ Backend acceptance, parallel security va migration tests: repository root’dan 
 
 - /apartments real /api/public/units katalogidan o‘qiydi, /api/public/leads ga idempotent murojaat yuboradi va API ishlamasa synthetic inventory ko‘rsatmaydi.
 - /crm dashboard, Kanban, mijozlar ro‘yxati, tarix va ichki eslatmalarni ko‘rsatadi.
-- 3D/WebGL yoki texnik chizma yo‘q; xonadon tanlash 2D ko‘rinishda.
+- Lazy React Three Fiber / Drei sahnasi: majmua → bino → qavat → xonadon, kamera boshqaruvlari va konsept cutaway. WebGL yo‘qligida 2D katalog saqlanadi; texnik chizma emas.
 - Sotuvni tasdiqlash workflow’i yo‘q. Rasmlar illyustrativ.
-- Responsive, accessibility va brauzer screenshot tekshiruvi alohida qo‘lda bajarilishi kerak.
+- 390/768/1440px screenshot, keyboard focus, reduced-motion va public matn kontrasti tekshirildi. Natijalar `../docs/ux-review.md` da; real mobil hardware va screen-reader tekshiruvi ochiq.

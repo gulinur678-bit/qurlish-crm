@@ -130,7 +130,7 @@ Bu tekshiruv asl demoda landing, 84 xonadon va tokensiz CRM 401 holatini tasdiql
 
 ## Hozirgi cheklovlar
 
-- 3D xonadon modeli, sale approval, real-time va fayl yuklash yo‘q.
+- v0.5: premium landing, API IDlariga bog‘langan lazy 3D majmua va konsept xonadon kesimi mavjud. Haqiqiy texnik 3D model, sale approval, real-time va fayl yuklash yo‘q. Tafsilotlar: [UX review](docs/ux-review.md).
 - Demo seed sintetik inventar yaratadi; haqiqiy inventar sifatida ishlatmang.
 - Rate limiting, monitoring, production backup/restore mashqlari va production operatsion ko‘rik ushbu lokal v0.4 o‘zgarishining tashqarisida. Company darajasidagi qulf kichik bitta kompaniya uchun tanlangan; yuqori yuklama testi bajarilmagan.
 - `references/lesson-20/` topilmadi; darsga muvofiqlik tasdiqlanmagan. PostgreSQL uchun kod yo‘li bor, ammo haqiqiy PostgreSQL integratsion testi bajarilmagan.

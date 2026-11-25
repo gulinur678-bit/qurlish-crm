@@ -141,7 +141,7 @@ test('Vite proxy preserves the Origin security check',async({request})=>{
 });
 
 test('legacy staff page keeps Viewer read-only and logs out',async({page})=>{
-  await page.goto('http://127.0.0.1:8000/staff');
+  await page.goto(new URL('/staff', process.env.E2E_API_URL || 'http://127.0.0.1:8000').href);
   await page.getByLabel('Email',{exact:true}).fill('viewer@e2e.test');
   await page.getByLabel('Parol',{exact:true}).fill(process.env.E2E_PASSWORD!);
   await page.getByRole('button',{name:'Kirish',exact:true}).click();
