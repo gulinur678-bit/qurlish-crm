@@ -2,6 +2,10 @@
 
 from dataclasses import dataclass
 import os
+from .environment import load_local_environment
+
+
+load_local_environment()
 
 
 def _database_url() -> str:

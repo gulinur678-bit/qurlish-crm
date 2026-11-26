@@ -12,6 +12,7 @@ from .auth import router as auth_router
 from .catalog_admin import router as catalog_admin_router
 from .crm_api import router as crm_router
 from .inventory import router as inventory_router
+from .workspace_api import router as workspace_router
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -26,6 +27,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Qurlish CRM API", lifespan=lifespan)
 app.include_router(auth_router)
 app.include_router(inventory_router)
+app.include_router(workspace_router)
 app.include_router(crm_router)
 app.include_router(catalog_admin_router)
 

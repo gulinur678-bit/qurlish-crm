@@ -1,0 +1,128 @@
+[
+  {
+    "width": 390,
+    "page": "dashboard",
+    "overflow": false,
+    "contrast": [],
+    "errors": []
+  },
+  {
+    "width": 390,
+    "page": "kanban",
+    "overflow": false,
+    "contrast": [],
+    "errors": []
+  },
+  {
+    "width": 390,
+    "page": "clients",
+    "overflow": false,
+    "contrast": [],
+    "errors": []
+  },
+  {
+    "width": 390,
+    "page": "inventory",
+    "overflow": false,
+    "contrast": [],
+    "errors": []
+  },
+  {
+    "width": 390,
+    "page": "staff",
+    "overflow": false,
+    "contrast": [],
+    "errors": []
+  },
+  {
+    "width": 390,
+    "page": "audit",
+    "overflow": false,
+    "contrast": [],
+    "errors": []
+  },
+  {
+    "width": 768,
+    "page": "dashboard",
+    "overflow": false,
+    "contrast": [],
+    "errors": []
+  },
+  {
+    "width": 768,
+    "page": "kanban",
+    "overflow": false,
+    "contrast": [],
+    "errors": []
+  },
+  {
+    "width": 768,
+    "page": "clients",
+    "overflow": false,
+    "contrast": [],
+    "errors": []
+  },
+  {
+    "width": 768,
+    "page": "inventory",
+    "overflow": false,
+    "contrast": [],
+    "errors": []
+  },
+  {
+    "width": 768,
+    "page": "staff",
+    "overflow": false,
+    "contrast": [],
+    "errors": []
+  },
+  {
+    "width": 768,
+    "page": "audit",
+    "overflow": false,
+    "contrast": [],
+    "errors": []
+  },
+  {
+    "width": 1440,
+    "page": "dashboard",
+    "overflow": false,
+    "contrast": [],
+    "errors": []
+  },
+  {
+    "width": 1440,
+    "page": "kanban",
+    "overflow": false,
+    "contrast": [],
+    "errors": []
+  },
+  {
+    "width": 1440,
+    "page": "clients",
+    "overflow": false,
+    "contrast": [],
+    "errors": []
+  },
+  {
+    "width": 1440,
+    "page": "inventory",
+    "overflow": false,
+    "contrast": [],
+    "errors": []
+  },
+  {
+    "width": 1440,
+    "page": "staff",
+    "overflow": false,
+    "contrast": [],
+    "errors": []
+  },
+  {
+    "width": 1440,
+    "page": "audit",
+    "overflow": false,
+    "contrast": [],
+    "errors": []
+  }
+]

@@ -3,13 +3,12 @@
 import re
 from typing import Literal
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
-from .auth import get_current_user, hash_password, require_roles
-from .config import settings
+from .auth import hash_password, require_roles
 from .identity import RefreshSession, Unit, User, add_audit, get_security_db, utcnow
 from .inventory import unit_json
 
@@ -59,9 +58,18 @@ def _ensure_another_active_admin(session: Session, target: User, update_role: st
 
 
 @router.get("/api/admin/users")
-def list_users(session: Session = Depends(get_security_db), user: User = Depends(require_roles("admin"))):
-    rows = session.scalars(select(User).where(User.company_id == user.company_id).order_by(User.email)).all()
-    return {"users": [_public_user(row) for row in rows]}
+def list_users(page: int | None = Query(None, ge=1), page_size: int = Query(25, ge=1, le=100),
+               q: str = Query("", max_length=100), session: Session = Depends(get_security_db),
+               user: User = Depends(require_roles("admin"))):
+    query = select(User).where(User.company_id == user.company_id)
+    if q.strip():
+        query = query.where(User.email.contains(q.strip(), autoescape=True))
+    total = session.scalar(select(func.count()).select_from(query.subquery())) or 0
+    query = query.order_by(User.email, User.id)
+    if page is not None:
+        query = query.offset((page - 1) * page_size).limit(page_size)
+    rows = session.scalars(query).all()
+    return {"users": [_public_user(row) for row in rows], "total": total, "page": page or 1}
 
 
 @router.post("/api/admin/users", status_code=201)
