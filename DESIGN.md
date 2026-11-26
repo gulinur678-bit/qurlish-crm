@@ -92,3 +92,17 @@ React 19 bilan Fiber 9 va Drei 10 ishlatiladi. Rasmiy moslik: https://r3f.docs.p
 Public muted matn kontrasti: surface’da 5.84:1, afzallik fonida 5.33:1; uch status juftligi 6.31:1 yoki yuqori; to‘q contact fonida matn 9.53:1. Hisob sRGB nisbiy yorqinlik formulasiga asoslangan. CRM kontrast auditi bu bosqichga kirmaydi.
 
 v0.5 tasdiqlangan test/performance dalillari: [UX review](docs/ux-review.md), [o‘lchovlar](docs/v05-measurements.json), [accessibility](docs/v05-accessibility.json). Cutaway xonalarini polga bosib yoki raqamli HTML tugmalar orqali klaviaturada tanlash mumkin. Kamera effekti faqat ko‘rinish/reset o‘zgarishiga bog‘langan; forma matnini tahrirlash kamerani qayta joylashtirmaydi.
+
+## v0.6 — Professional CRM (2026-11-26)
+
+`ProfessionalCRM.tsx` alohida lazy modul: sidebar → topbar/profil → sahifa sarlavhasi/davr → ish maydoni. Yashil sidebar, oq panellar, o‘qilishi oson statuslar va umumiy spacing/radius/rang tokenlari `workspace.css` da. `WorkspaceAdmin.tsx` inventar, xodim va audit sahifalarini; `workspaceShared.tsx` yuklash/xato/bo‘sh holat, dialog va sahifalashni birlashtiradi.
+
+Menejer: login → 7/30/90 kun dashboard → Kanban yoki qidiriladigan mijozlar jadvali → xonadon/tarix/eslatmali karta. Admin: inventar filtrlari → bo‘sh/bron tahriri; xodimlar → yaratish/rol/aktivlik → audit. Viewer ko‘rish boshqaruvlari bilan cheklanadi; server RBAC asosiy chegara bo‘lib qoladi.
+
+Dashboard murojaatlari va so‘nggi 5 ta yozuv bir xil `as_of` cutoff bilan so‘raladi. Bu bir xil davr filtri; parallel so‘rovlar uchun tranzaksion snapshot kafolati emas. Metrikalar SQL orqali hisoblanadi: 7 ta vaqt oralig‘i, joriy bosqichlar va inventar statuslari. Timestamp UTC ga normallashtiriladi va oxirgi bucket aniq cutoff’ni qamraydi. Inventar sonlari davrga bog‘liq emas; bosqichlar konversiya yoki daromad emas.
+
+Mijozlar jadvali 25 ta, Kanban 100 ta yozuvdan sahifalanadi; ustun sonlari joriy sahifaga tegishli. API qidiruv, stage va sort’ni qo‘llaydi. Optimistic stage tahriri xatoda qaytariladi. Dialog Escape bilan yopiladi, focus ochgan tugmaga qaytadi. Mobil jadval va Kanban o‘z konteynerida scroll qiladi; yopiq mobil menyu klaviatura tab tartibidan ham yashiriladi.
+
+Mavjud refresh rotation, account revocation va company scope ishlatiladi. Yangi sxema migratsiyasi talab qilinmaydi. Audit proyeksiyasi raw details va sessiya identifikatorlarini bermaydi. Xodim parollari forma yuborilgandan/yopilgandan so‘ng UI state’dan tozalanadi.
+
+Dalillar va ochiq chegaralar: [v0.6 review](docs/v06-workspace-review.md).

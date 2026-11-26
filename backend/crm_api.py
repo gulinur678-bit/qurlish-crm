@@ -1,16 +1,16 @@
 """Authenticated CRM lead, history and metrics endpoints."""
 
-from datetime import timedelta, timezone
+from datetime import datetime
 from typing import Literal
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
 from .auth import get_current_user, require_roles
-from .config import settings
-from .identity import Lead, LeadEvent, Unit, User, add_audit, get_db, utcnow
+from .crm_service import metrics_for, period
+from .identity import Lead, LeadEvent, Unit, User, add_audit, get_db
 from .inventory import unit_json
 
 
@@ -52,49 +52,38 @@ def me(user: User = Depends(get_current_user)):
 
 
 @router.get("/leads")
-def leads(days: int = 30, session: Session = Depends(get_db), user: User = Depends(require_roles(*READ_ROLES))):
-    if days not in (7, 30, 90):
-        raise HTTPException(422, "Davr 7, 30 yoki 90 kun")
-    since = utcnow() - timedelta(days=days)
-    rows = session.scalars(
-        select(Lead)
-        .where(Lead.company_id == user.company_id, Lead.created_at >= since)
-        .order_by(Lead.created_at.desc())
-    ).all()
-    return {"days": days, "leads": [lead_json(lead) for lead in rows]}
+def leads(days: int = 30, page: int | None = Query(None, ge=1),
+          page_size: int = Query(25, ge=1, le=100), q: str = Query("", max_length=100),
+          stage: Literal["new", "contacted", "qualified", "closed_lost"] | None = None,
+          sort: Literal["newest", "oldest", "name"] = "newest", as_of: datetime | None = None,
+          session: Session = Depends(get_db), user: User = Depends(require_roles(*READ_ROLES))):
+    since, end = period(days, as_of)
+    query = select(Lead).where(Lead.company_id == user.company_id, Lead.created_at >= since, Lead.created_at <= end)
+    if q.strip():
+        query = query.where(or_(Lead.name.contains(q.strip(), autoescape=True), Lead.phone.contains(q.strip(), autoescape=True), Lead.unit_id.contains(q.strip(), autoescape=True)))
+    if stage:
+        query = query.where(Lead.stage == stage)
+    total = session.scalar(select(func.count()).select_from(query.subquery())) or 0
+    ordering = {"newest": Lead.created_at.desc(), "oldest": Lead.created_at.asc(), "name": Lead.name.asc()}
+    query = query.order_by(ordering[sort], Lead.id.desc())
+    if page is not None:
+        query = query.offset((page - 1) * page_size).limit(page_size)
+    rows = session.scalars(query).all()
+    return {"days": days, "leads": [lead_json(lead) for lead in rows], "total": total,
+            "page": page or 1, "page_size": page_size, "as_of": end.isoformat()}
 
 
 @router.get("/metrics")
-def metrics(days: int = 30, session: Session = Depends(get_db), user: User = Depends(require_roles(*READ_ROLES))):
-    if days not in (7, 30, 90):
-        raise HTTPException(422, "Davr 7, 30 yoki 90 kun")
-    now = utcnow()
-    since = now - timedelta(days=days)
-    rows = session.scalars(
-        select(Lead).where(Lead.company_id == user.company_id, Lead.created_at >= since)
-    ).all()
-    counts = {stage: sum(lead.stage == stage for lead in rows) for stage in STAGES}
-    bins = [0] * 7
-    interval = max(1, (now - since).total_seconds())
-    for lead in rows:
-        created = lead.created_at.replace(tzinfo=timezone.utc) if lead.created_at.tzinfo is None else lead.created_at
-        elapsed = created - since
-        index = min(6, max(0, int(elapsed.total_seconds() / interval * 7)))
-        bins[index] += 1
-    statuses = {
-        status: session.scalar(
-            select(func.count()).select_from(Unit).where(Unit.company_id == user.company_id, Unit.status == status)
-        ) or 0
-        for status in ("available", "reserved", "sold")
-    }
-    return {
-        "days": days,
-        "count": len(rows),
-        "stages": counts,
-        "bins": bins,
-        "unit_statuses": statuses,
-        "as_of": now.isoformat(),
-    }
+def metrics(days: int = 30, as_of: datetime | None = None,
+            session: Session = Depends(get_db), user: User = Depends(require_roles(*READ_ROLES))):
+    return metrics_for(session, user.company_id, days, as_of)
+
+
+@router.get("/leads/{lead_id}/detail")
+def lead_detail(lead_id: int, session: Session = Depends(get_db), user: User = Depends(require_roles(*READ_ROLES))):
+    lead = _lead_or_404(session, lead_id, user.company_id)
+    unit = session.scalar(select(Unit).where(Unit.id == lead.unit_id, Unit.company_id == user.company_id))
+    return {"lead": lead_json(lead), "unit": unit_json(unit) if unit else None}
 
 
 @router.patch("/leads/{lead_id}/stage")

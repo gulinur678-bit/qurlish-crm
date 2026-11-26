@@ -43,7 +43,7 @@ def main():
             unit_id = session.scalar(select(Unit.id).where(Unit.company_id == "qurlish", Unit.status == "available").order_by(Unit.id))
             assert unit_id is not None
             session.add(Lead(unit_id=unit_id, name="E2E xaridor", phone="+998900000001", stage="new", company_id="qurlish"))
-        uvicorn.run("backend.main:app", host="127.0.0.1", port=8000, access_log=False, log_level="warning")
+        uvicorn.run("backend.main:app", host="127.0.0.1", port=int(os.environ.get("E2E_API_PORT", "8000")), access_log=False, log_level="warning")
 
 
 if __name__ == "__main__":

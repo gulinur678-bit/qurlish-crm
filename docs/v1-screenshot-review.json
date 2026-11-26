@@ -1,0 +1,21 @@
+{
+  "captured_at": "2026-11-26T10:00:26.258Z",
+  "source": "Fresh temporary SQLite demo; live API; 12 synthetic leads; no network mocks",
+  "desktop": {
+    "width": 1440,
+    "height": 1000
+  },
+  "mobile": {
+    "width": 390,
+    "height": 844
+  },
+  "mobile_overflow": false,
+  "page_errors": [],
+  "files": [
+    "dashboard-desktop.jpg",
+    "dashboard-mobile.jpg",
+    "explorer-desktop.jpg",
+    "kanban-desktop.jpg",
+    "landing-desktop.jpg"
+  ]
+}

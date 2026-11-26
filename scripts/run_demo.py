@@ -19,6 +19,16 @@ def main():
         revision = connection.execute("SELECT version_num FROM alembic_version").fetchone()
         if revision != ("20261124_v04",):
             raise SystemExit("Local demo migration must be verified first.")
+    from backend.environment import load_local_environment
+    load_local_environment()
+    # Explicit environment / local .env takes precedence. Keep the previous
+    # private runtime file as a fallback for existing demo installations.
+    secret = os.getenv("JWT_SECRET", "")
+    if secret:
+        if len(secret) < 32:
+            raise SystemExit("Invalid JWT_SECRET configuration; value was not printed.")
+        start(database, secret)
+        return
     private = ROOT / "backups"
     if private.is_symlink():
         raise SystemExit("Private runtime directory cannot be a symlink.")
@@ -35,6 +45,10 @@ def main():
     secret = json.loads(runtime.read_text()).get("jwt_secret")
     if not isinstance(secret, str) or len(secret) < 32:
         raise SystemExit("Invalid private runtime configuration; contents were not printed.")
+    start(database, secret)
+
+
+def start(database: Path, secret: str):
     os.environ.update(DATABASE_URL="sqlite:///" + str(database), COMPANY_ID="qurlish", JWT_SECRET=secret, COOKIE_SECURE="0")
     import uvicorn
     print("Verified local demo database; backend listening on http://127.0.0.1:8000", flush=True)
